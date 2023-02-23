@@ -31,11 +31,12 @@ void delayInput(const BYTE keyCode, const bool withShift)
 
 TEST(ConsoleIO, StandardOutputWrap)
 {
-	// 内部で cio::StandardOutput::instance().**** を呼び出しているだけなので詳細なテストは省略
+	// 中身は殆ど cio::StandardOutput と cio::Logger のメンバを呼び出しているだけなので、詳細なテストはそれらのテストに任せる
+	EXPECT_NO_THROW(cio::enableLogMirroring(true, "foobar.log"));
+	EXPECT_NO_THROW(cio::disableLogMirroring());
 	EXPECT_NO_THROW(cio::print(""));
 	EXPECT_NO_THROW(cio::printError(""));
 	EXPECT_NO_THROW(cio::back(0));
-	EXPECT_NO_THROW(cio::flush());
 }
 
 TEST(ConsoleIO, question)

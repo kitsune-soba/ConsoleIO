@@ -151,11 +151,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Logger.cpp" />
     <ClCompile Include="StandardOutput.cpp" />
     <ClCompile Include="ConsoleIO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Color.hpp" />
+    <ClInclude Include="Logger.hpp" />
     <ClInclude Include="StandardOutput.hpp" />
     <ClInclude Include="ConsoleIO.hpp" />
   </ItemGroup>

@@ -8,26 +8,30 @@
 namespace cio
 {
 
+// question 関数に指定した選択肢が2個未満だった場合に投げられる例外
 class TooFewChicesException : public std::logic_error
 {
 public:
-	TooFewChicesException()
-		: logic_error("The total of default choice and following choices must be 2 or more.") {}
+	TooFewChicesException(const std::string& message)
+		: logic_error(message) {}
 };
 
+// 標準（エラー）出力をログファイルにも出力するようにする
+void enableLogMirroring(bool errorOnly, const std::string& path, bool append = false);
+
+// ログファイルへの出力をやめる
+void disableLogMirroring(void);
+
 // 標準出力に出力する
-void print(const std::string& string, Color color = Color::Default);
+void print(const std::string& string, Color color = Color::Default, bool flush = false);
 
 // 標準エラー出力に出力する
-void printError(const std::string& string, Color color = Color::Default);
+void printError(const std::string& string, Color color = Color::Default, bool flush = true);
 
 // カーソルを指定された文字数分戻す
 // 戻った分の文字は削除しない
 // 現在の行の先頭よりも前へは戻らない
 void back(std::size_t count);
-
-// 標準出力のバッファを流す
-void flush(void);
 
 // <question> [Y/n] のような質問文をコンソールに表示し、キー入力による回答を受け取る
 // エンターキーが押された場合は標準の選択肢（defaultChoice）が選択されたとみなす

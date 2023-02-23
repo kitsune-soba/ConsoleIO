@@ -3,33 +3,60 @@
 #include <format>
 #include <iostream>
 #include "ConsoleIO.hpp"
+#include "Logger.hpp"
 #include "StandardOutput.hpp"
 
 namespace cio
 {
 
-// 標準出力に出力する
-void print(const std::string& string, const Color color)
+// 標準（エラー）出力をログファイルにも出力するようにする
+void enableLogMirroring(const bool errorOnly, const std::string& path, const bool append)
 {
-	StandardOutput::getInstance().print(string, color);
+	Logger::getInstance().enable(errorOnly, path, append);
+}
+
+// ログファイルへの出力をやめる
+void disableLogMirroring(void)
+{
+	Logger::getInstance().disable();
+}
+
+// 標準出力に出力する
+void print(const std::string& string, const Color color, const bool flush)
+{
+	StandardOutput& so = StandardOutput::getInstance();
+	Logger& logger = Logger::getInstance();
+
+	so.print(string, color);
+	logger.write(string);
+
+	if (flush)
+	{
+		so.flush();
+		logger.flush();
+	}
 }
 
 // 標準エラー出力に出力する
-void printError(const std::string& string, const Color color)
+void printError(const std::string& string, const Color color, const bool flush)
 {
-	StandardOutput::getInstance().printError(string, color);
+	StandardOutput& so = StandardOutput::getInstance();
+	Logger& logger = Logger::getInstance();
+
+	so.printError(string, color);
+	logger.writeError(string);
+
+	if (flush)
+	{
+		so.flush();
+		logger.flush();
+	}
 }
 
 // カーソルの位置を戻す
 void back(const std::size_t count)
 {
 	StandardOutput::getInstance().back(count);
-}
-
-// 標準出力のバッファを流す
-void flush(void)
-{
-	StandardOutput::getInstance().flush();
 }
 
 // コンソールで質問する
@@ -42,7 +69,7 @@ char question(
 	const std::size_t choiceCount = ((defaultChoice == '\0') ? 0 : 1) + followingChoices.size();
 	if (choiceCount < 2)
 	{
-		throw TooFewChicesException();
+		throw TooFewChicesException("The total of default choice and following choices must be 2 or more.");
 	}
 
 	// 選択肢を表示
@@ -62,13 +89,11 @@ char question(
 			print("/");
 		}
 	}
-	print("]");
-	flush();
+	print("]", Color::Default, true);
 
 	// 入力されたキーに一致する選択肢を探す（見つからない場合はヌル文字を戻り値にする）
 	const char key = waitAnyKey();
-	print("\n");
-	flush();
+	print("\n", Color::Default, true);
 	const char enterKey = 0x0d;
 	char answer;
 	if (ignoreCaseEqual(key, defaultChoice) ||
