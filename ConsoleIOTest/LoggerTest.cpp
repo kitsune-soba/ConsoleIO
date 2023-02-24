@@ -32,14 +32,14 @@ TEST(Logger, enable)
 	// 不正なパスを渡すテスト
 	EXPECT_THROW(logger.enable(true, R"(\/:*?"<>|)", false), cio::FileOpenException);
 
-	// 正常なパスを渡すテスト（errorOnly = true）
+	// 指定されたパスのログファイルが生成されるテスト（errorOnly = true）
 	if (exists(path)) { remove(path.c_str()); };
 	EXPECT_FALSE(exists(path));
 	EXPECT_NO_THROW(logger.enable(true, path, false));
 	EXPECT_TRUE(exists(path));
 	logger.disable();
 
-	// 正常なパスを渡すテスト（errorOnly = false）
+	// 指定されたパスのログファイルが生成されるテスト（errorOnly = false）
 	if (exists(path)) { remove(path.c_str()); };
 	EXPECT_FALSE(exists(path));
 	EXPECT_NO_THROW(logger.enable(false, path, false));
@@ -63,6 +63,36 @@ TEST(Logger, enable)
 	// 多重に enable しても何も起きないテスト
 	EXPECT_NO_THROW(logger.enable(true, path, false));
 	EXPECT_NO_THROW(logger.enable(true, path, false));
+	logger.disable();
+}
+
+TEST(Logger, changeMode)
+{
+	cio::Logger& logger = cio::Logger::getInstance();
+	const std::string path("Logger_changeMode.log");
+
+	logger.enable(true, path, false);
+	logger.write("StandardOutput_1\n"); // errorOnly モードなので書き込まれないはず
+	logger.writeError("StandardError_1\n");
+	logger.changeMode(false);
+	logger.write("StandardOutput_2\n");
+	logger.writeError("StandardError_2\n");
+	logger.changeMode(true);
+	logger.write("StandardOutput_3\n"); // errorOnly モードなので書き込まれないはず
+	logger.writeError("StandardError_3\n");
+	logger.flush();
+	EXPECT_EQ(readFile(path),
+		"StandardError_1\nStandardOutput_2\nStandardError_2\nStandardError_3\n");
+	logger.disable();
+
+	// 現在のモードと同じモードに設定しようとしても問題ないことを確認するテスト
+	logger.enable(true, path, false);
+	EXPECT_NO_THROW(logger.changeMode(true));
+	EXPECT_NO_THROW(logger.changeMode(true));
+	logger.disable();
+	logger.enable(false, path, false);
+	EXPECT_NO_THROW(logger.changeMode(false));
+	EXPECT_NO_THROW(logger.changeMode(false));
 	logger.disable();
 }
 
@@ -145,12 +175,13 @@ TEST(Logger, flush)
 	cio::Logger& logger = cio::Logger::getInstance();
 	const std::string path("Logger_flush.log");
 
+	// バッファを流すことでファイルに確実に書き込まれるはず
+	logger.enable(false, path, false);
+	logger.write("If not flush, this line may not be written immediately.");
+	logger.flush();
+	EXPECT_EQ(readFile(path), "If not flush, this line may not be written immediately.");
+	logger.disable();
+
 	// ログが無効な状態でも問題は発生しない
 	EXPECT_NO_THROW(logger.flush());
-
-	// ログが有効な状態も問題は発生しない
-	if (exists(path)) { remove(path.c_str()); };
-	logger.enable(true, path, false);
-	EXPECT_NO_THROW(logger.flush());
-	logger.disable();
 }

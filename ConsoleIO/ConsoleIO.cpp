@@ -15,6 +15,12 @@ void enableLogMirroring(const bool errorOnly, const std::string& path, const boo
 	Logger::getInstance().enable(errorOnly, path, append);
 }
 
+// ログファイルへの出力のモードを変更する
+void changeLogMirroringMode(const bool errorOnly)
+{
+	Logger::getInstance().changeMode(errorOnly);
+}
+
 // ログファイルへの出力をやめる
 void disableLogMirroring(void)
 {

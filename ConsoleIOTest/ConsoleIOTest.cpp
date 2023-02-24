@@ -33,6 +33,7 @@ TEST(ConsoleIO, StandardOutputWrap)
 {
 	// 中身は殆ど cio::StandardOutput と cio::Logger のメンバを呼び出しているだけなので、詳細なテストはそれらのテストに任せる
 	EXPECT_NO_THROW(cio::enableLogMirroring(true, "foobar.log"));
+	EXPECT_NO_THROW(cio::changeLogMirroringMode(false));
 	EXPECT_NO_THROW(cio::disableLogMirroring());
 	EXPECT_NO_THROW(cio::print(""));
 	EXPECT_NO_THROW(cio::printError(""));

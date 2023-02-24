@@ -19,6 +19,9 @@ public:
 // 標準（エラー）出力をログファイルにも出力するようにする
 void enableLogMirroring(bool errorOnly, const std::string& path, bool append = false);
 
+// ログファイルへの出力のモードを変更する
+void changeLogMirroringMode(bool errorOnly);
+
 // ログファイルへの出力をやめる
 void disableLogMirroring(void);
 

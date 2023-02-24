@@ -29,6 +29,12 @@ void Logger::enable(const bool errOnly, const std::string& path, const bool appe
 	errorOnly = errOnly;
 }
 
+// ログ出力のモードを変更する
+void Logger::changeMode(const bool errOnly)
+{
+	errorOnly = errOnly;
+}
+
 // ログファイルを閉じて書き込みを無効化する
 void Logger::disable(void)
 {
