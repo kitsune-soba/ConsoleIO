@@ -65,6 +65,15 @@ void back(const std::size_t count)
 	StandardOutput::getInstance().back(count);
 }
 
+// コンソールからの入力を1行分受け付ける（スペースで切らない）
+std::string getLine(void)
+{
+	std::string string;
+	std::getline(std::cin, string);
+	Logger::getInstance().write(string + '\n');
+	return std::move(string);
+}
+
 // コンソールで質問する
 char question(
 	const std::string& question,

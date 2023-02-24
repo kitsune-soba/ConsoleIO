@@ -4,6 +4,9 @@
 #include <thread>
 #include "../ConsoleIO/ConsoleIO.hpp"
 
+// 指定されたファイルの内容を全て読み取る
+std::string readFile(const std::string& path);
+
 // デストラクタで join するスレッドのラッパー
 class ScopedThread
 {
@@ -29,15 +32,45 @@ void delayInput(const BYTE keyCode, const bool withShift)
 	if (withShift) { keybd_event(VK_SHIFT, 0, KEYEVENTF_KEYUP, NULL); }
 }
 
-TEST(ConsoleIO, StandardOutputWrap)
+// 遅延後、指定したキーを連続で入力する（大文字の入力には非対応）
+void delayInputs(const std::vector<BYTE>& keyCodes)
+{
+	Sleep(10);
+
+	for (const BYTE keyCode : keyCodes)
+	{
+		keybd_event(keyCode, 0, 0, NULL); // キーを押す
+		keybd_event(keyCode, 0, KEYEVENTF_KEYUP, NULL); // キーを離す
+	}
+
+}
+
+TEST(ConsoleIO, misc)
 {
 	// 中身は殆ど cio::StandardOutput と cio::Logger のメンバを呼び出しているだけなので、詳細なテストはそれらのテストに任せる
-	EXPECT_NO_THROW(cio::enableLogMirroring(true, "foobar.log"));
+	EXPECT_NO_THROW(cio::enableLogMirroring(true, "misc.log"));
 	EXPECT_NO_THROW(cio::changeLogMirroringMode(false));
 	EXPECT_NO_THROW(cio::disableLogMirroring());
 	EXPECT_NO_THROW(cio::print(""));
 	EXPECT_NO_THROW(cio::printError(""));
 	EXPECT_NO_THROW(cio::back(0));
+}
+
+TEST(ConsoleIO, getLine)
+{
+	const std::string path("ConsoleIO_getLine.log");
+	cio::enableLogMirroring(false, path, false);
+
+	// コンソールから入力を1行受け取るテスト
+	{
+		ScopedThread thread(std::thread(delayInputs,
+			std::vector<BYTE>{ 'A', VK_SPACE, 'B', VK_SPACE, 'C', VK_RETURN }));
+		EXPECT_EQ(cio::getLine(), "a b c");
+	}
+
+	// コンソールからの入力がログファイルに書き込まているか確認
+	cio::disableLogMirroring();
+	EXPECT_EQ(readFile(path), "a b c\n");
 }
 
 TEST(ConsoleIO, question)

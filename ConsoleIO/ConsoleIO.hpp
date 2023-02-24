@@ -34,7 +34,13 @@ void printError(const std::string& string, Color color = Color::Default, bool fl
 // カーソルを指定された文字数分戻す
 // 戻った分の文字は削除しない
 // 現在の行の先頭よりも前へは戻らない
+// ログファイルへのミラーリングには反映されない
 void back(std::size_t count);
+
+// コンソールからの入力を1行分受け付ける（スペースで切らない）
+// 標準出力のログファイルへのミラーリングが有効かつ errorOnly でなければ、コンソールへの入力もログに書き込まれる
+// 但し、maxSize を超過した分の入力はコンソールには表示されるもののログ（や戻り値）では切り捨てられる
+std::string getLine(void);
 
 // <question> [Y/n] のような質問文をコンソールに表示し、キー入力による回答を受け取る
 // エンターキーが押された場合は標準の選択肢（defaultChoice）が選択されたとみなす
