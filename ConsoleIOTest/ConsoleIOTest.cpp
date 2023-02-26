@@ -19,36 +19,32 @@ private:
 };
 
 // 指定したキーを遅延して自動入力する
-void delayInput(const BYTE keyCode, const bool withShift)
+std::thread delayInput(const std::initializer_list<BYTE> keys)
 {
-	Sleep(10);
-
-	// キーを押す
-	if (withShift) { keybd_event(VK_SHIFT, 0, 0, NULL); }
-	keybd_event(keyCode, 0, 0, NULL);
-
-	// キーを離す
-	keybd_event(keyCode, 0, KEYEVENTF_KEYUP, NULL);
-	if (withShift) { keybd_event(VK_SHIFT, 0, KEYEVENTF_KEYUP, NULL); }
-}
-
-// 遅延後、指定したキーを連続で入力する（大文字の入力には非対応）
-void delayInputs(const std::vector<BYTE>& keyCodes)
-{
-	Sleep(10);
-
-	for (const BYTE keyCode : keyCodes)
+	return std::thread ([keys]()
 	{
-		keybd_event(keyCode, 0, 0, NULL); // キーを押す
-		keybd_event(keyCode, 0, KEYEVENTF_KEYUP, NULL); // キーを離す
-	}
+		Sleep(10);
 
+		for (const BYTE key : keys)
+		{
+			const BYTE keyCode = (islower(key) != 0) ? cio::toUpper(key) : key; // 小文字のアルファベットであればキーコード（大文字）に直す
+			const bool shift = isupper(key) != 0; // 大文字を入力する場合はシフトキーを使う
+
+			// キーを押す
+			if (shift) { keybd_event(VK_SHIFT, 0, 0, NULL); }
+			keybd_event(keyCode, 0, 0, NULL);
+
+			// キーを離す
+			keybd_event(keyCode, 0, KEYEVENTF_KEYUP, NULL);
+			if (shift) { keybd_event(VK_SHIFT, 0, KEYEVENTF_KEYUP, NULL); }
+		}
+	});
 }
 
 TEST(ConsoleIO, misc)
 {
 	// 中身は殆ど cio::StandardOutput と cio::Logger のメンバを呼び出しているだけなので、詳細なテストはそれらのテストに任せる
-	EXPECT_NO_THROW(cio::enableLogMirroring(true, "misc.log"));
+	EXPECT_NO_THROW(cio::enableLogMirroring(true, "ConsoleIO_misc.log"));
 	EXPECT_NO_THROW(cio::changeLogMirroringMode(false));
 	EXPECT_NO_THROW(cio::disableLogMirroring());
 	EXPECT_NO_THROW(cio::print(""));
@@ -59,12 +55,11 @@ TEST(ConsoleIO, misc)
 TEST(ConsoleIO, getLine)
 {
 	const std::string path("ConsoleIO_getLine.log");
-	cio::enableLogMirroring(false, path, false);
+	cio::enableLogMirroring(false, path);
 
 	// コンソールから入力を1行受け取るテスト
 	{
-		ScopedThread thread(std::thread(delayInputs,
-			std::vector<BYTE>{ 'A', VK_SPACE, 'B', VK_SPACE, 'C', VK_RETURN }));
+		ScopedThread thread(delayInput({ 'a', VK_SPACE, 'b', VK_SPACE, 'c', VK_RETURN }));
 		EXPECT_EQ(cio::getLine(), "a b c");
 	}
 
@@ -77,50 +72,65 @@ TEST(ConsoleIO, question)
 {
 	// 選択肢にあるキーを入力するテスト
 	{
-		ScopedThread thread(std::thread(delayInput, 'A', false));
-		EXPECT_EQ(cio::question("標準の選択肢を小文字で選択するテスト", 'A', { 'B', 'C' }), 'a');
+		ScopedThread thread(delayInput({ 'a', VK_RETURN }));
+		EXPECT_EQ(cio::question("標準の選択肢を小文字で選択するテスト", 'A', { 'B', 'C' }), 'A');
 	}
 	{
-		ScopedThread thread(std::thread(delayInput, 'A', true));
+		ScopedThread thread(delayInput({ 'A', VK_RETURN }));
 		EXPECT_EQ(cio::question("標準の選択肢を大文字で選択するテスト", 'a', { 'b', 'c' }), 'a');
 	}
 	{
-		ScopedThread thread(std::thread(delayInput, 'B', false));
-		EXPECT_EQ(cio::question("追加の選択肢を小文字で選択するテスト", 'A', { 'B', 'C' }), 'b');
+		ScopedThread thread(delayInput({ 'b', VK_RETURN }));
+		EXPECT_EQ(cio::question("追加の選択肢を小文字で選択するテスト", 'A', { 'B', 'C' }), 'B');
 	}
 	{
-		ScopedThread thread(std::thread(delayInput, 'B', true));
+		ScopedThread thread(delayInput({ 'B', VK_RETURN }));
 		EXPECT_EQ(cio::question("追加の選択肢を大文字で選択するテスト", 'a', { 'b', 'c' }), 'b');
 	}
 
 	// 選択肢に無いキーを入力するテスト
 	{
-		ScopedThread thread(std::thread(delayInput, 'A', false));
+		ScopedThread thread(delayInput({ 'a', VK_RETURN }));
 		EXPECT_EQ(cio::question("選択肢に無いキーを入力するテスト", 'x', { 'y', 'z' }), '\0');
 	}
 
 	// エンターキーを押して標準の選択肢を選ぶテスト
 	{
-		ScopedThread thread(std::thread(delayInput, static_cast<BYTE>(VK_RETURN), false));
+		ScopedThread thread(delayInput({ VK_RETURN }));
 		EXPECT_EQ(cio::question("エンターキーで標準の選択肢を選ぶテスト", 'y', { 'n' }), 'y');
 	}
 	{
-		ScopedThread thread(std::thread(delayInput, static_cast<BYTE>(VK_RETURN), false));
+		ScopedThread thread(delayInput({ VK_RETURN }));
 		EXPECT_EQ(cio::question("標準の選択肢が無い状態でエンターキーを押すテスト", '\0', { 'y', 'n' }), '\0');
+	}
+
+	// 二文字以上入力するテスト
+	{
+		ScopedThread thread(delayInput({ 'a', 'b', VK_RETURN}));
+		EXPECT_EQ(cio::question("二文字以上入力するテスト", 'y', { 'n' }), '\0');
 	}
 
 	// 選択肢が2個未満の場合に例外を投げるテスト
 	EXPECT_THROW(cio::question("", 'A', {}), cio::TooFewChicesException);
 	EXPECT_THROW(cio::question("", '\0', { 'A' }), cio::TooFewChicesException);
 	EXPECT_THROW(cio::question("", '\0', {}), cio::TooFewChicesException);
+
+	// ログファイルに書き込まれているか確認
+	const std::string log = "ConsoleIO_question.log";
+	cio::enableLogMirroring(false, log);
+	{
+		ScopedThread thread(delayInput({ 'y', VK_RETURN }));
+		cio::question("ログファイルに記録するテスト", 'y', { 'n' });
+	}
+	cio::disableLogMirroring();
+	EXPECT_EQ(readFile(log), "ログファイルに記録するテスト [Y/n] y\n");
 }
 
 TEST(ConsoleIO, waitAnyKey)
 {
 	// 押されたキーを受け取るテスト
-	const BYTE enterKey = static_cast<BYTE>(VK_RETURN);
-	ScopedThread thread(std::thread(delayInput, enterKey, false));
-	EXPECT_EQ(cio::waitAnyKey(), enterKey);
+	ScopedThread thread(delayInput({ VK_RETURN }));
+	EXPECT_EQ(cio::waitAnyKey(), VK_RETURN);
 }
 
 TEST(ConsoleIO, ignoreCaseEqual)
@@ -153,4 +163,24 @@ TEST(ConsoleIO, toUpper)
 
 	// 対応する大文字が無い場合は引数をそのまま返す
 	EXPECT_EQ(cio::toUpper('!'), '!');
+}
+
+TEST(ConsoleIO, trimSpace)
+{
+	// 前後に空白文字が無い場合のテスト
+	EXPECT_EQ(cio::trimSpace("not trimmed"), "not trimmed");
+
+	// 前後の空白文字をトリムするテスト
+	EXPECT_EQ(cio::trimSpace(" trimmed "), "trimmed");
+	EXPECT_EQ(cio::trimSpace("\ttrimmed\t"), "trimmed");
+	EXPECT_EQ(cio::trimSpace("\vtrimmed\v"), "trimmed");
+	EXPECT_EQ(cio::trimSpace("\rtrimmed\r"), "trimmed");
+	EXPECT_EQ(cio::trimSpace("\ntrimmed\n"), "trimmed");
+	EXPECT_EQ(cio::trimSpace("  \n\r \t\v trimmed \t   \v\r\n     "), "trimmed");
+
+	// 空白文字のみを渡すテスト
+	EXPECT_EQ(cio::trimSpace("\n\r  \t\v"), "");
+
+	// 空文字列を渡すテスト
+	EXPECT_EQ(cio::trimSpace(""), "");
 }

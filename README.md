@@ -28,17 +28,15 @@ int main(int, char* [])
 	cio::printError("標準エラー出力するテスト\n");
 
 	char answer;
-	while ((answer = cio::question("終了しますか？", 'y', { 'n', '?' })) != 'y') // 終了しますか？[Y/n/?] と表示される
+	while ((answer = cio::question("終了しますか？", 'y', { 'n', '?' })) != 'y') // 終了しますか？ [Y/n/?] と表示される
 	{
 		switch (answer)
 		{
 		case '?':
-			cio::print("Y(y)", cio::Color::Green);
-			cio::print(" キーを押すと終了できます。\nまた、Y は標準の選択肢（第二引数）に設定されているので ");
-			cio::print("Enter", cio::Color::Green);
-			cio::print(" を押しても同様に終了できます。\n");
+			cio::print("y", cio::Color::Green);
+			cio::print("（または Y）を入力すると終了できます。\nまた、Y は標準の選択肢（第二引数）に設定されているので、空文字を入力しても同様に終了できます。\n");
 			break;
-		case '\0': // 選択肢に無いキーが押されたらヌル文字が返る
+		case '\0': // 選択肢に無い回答があった場合はヌル文字が返る
 			cio::printError("そのキーは選択肢にありませんね…。\n", cio::Color::Red);
 			break;
 		}
