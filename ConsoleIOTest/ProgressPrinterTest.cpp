@@ -1,4 +1,4 @@
-// ProgressPrinter ƒNƒ‰ƒX‚ÌƒeƒXƒg
+ï»¿// ProgressPrinter ã‚¯ãƒ©ã‚¹ã®ãƒ†ã‚¹ãƒˆ
 
 #include "pch.h"
 #define WIN32_LEAN_AND_MEAN
@@ -6,43 +6,43 @@
 #include "../ConsoleIO/ConsoleIO.hpp"
 #include "../ConsoleIO/ProgressPrinter.hpp"
 
-// w’è‚³‚ê‚½ƒtƒ@ƒCƒ‹‚Ì“à—e‚ğ‘S‚Ä“Ç‚İæ‚é
+// æŒ‡å®šã•ã‚ŒãŸãƒ•ã‚¡ã‚¤ãƒ«ã®å†…å®¹ã‚’å…¨ã¦èª­ã¿å–ã‚‹
 std::string readFile(const std::string& path);
 
 TEST(ProgressPrinter, ConstructorAndDestructor)
 {
 	const std::string logPath = "ProgressPrinter_update.log";
 
-	// •\¦‚ğ‘‚â‚µ‚Ä‚¢‚­ƒeƒXƒg
+	// è¡¨ç¤ºã‚’å¢—ã‚„ã—ã¦ã„ããƒ†ã‚¹ãƒˆ
 	cio::enableLogMirroring(false, logPath);
 	{
 		size_t count = 0;
 		cio::ProgressPrinter pp([&count] { return std::string(count, '#'); }, 1, false);
-		for (count = 0; count < 40; ++count) { Sleep(1); } // ‰½‚©‚µ‚ç‚Ìì‹Æ‚Ìi’»
+		for (count = 0; count < 40; ++count) { Sleep(1); } // ä½•ã‹ã—ã‚‰ã®ä½œæ¥­ã®é€²æ—
 	}
 	cio::print("\n");
 	cio::disableLogMirroring();
 	EXPECT_EQ(readFile(logPath), std::string(40, '#') + '\n');
 
-	// •\¦‚ğŒ¸‚ç‚µ‚Ä‚¢‚­ƒeƒXƒg
+	// è¡¨ç¤ºã‚’æ¸›ã‚‰ã—ã¦ã„ããƒ†ã‚¹ãƒˆ
 	cio::enableLogMirroring(false, logPath);
 	{
 		size_t count = 0;
 		cio::ProgressPrinter pp([&count] { return std::string(40 - count, '#'); }, 1, false);
-		for (count = 0; count < 40; ++count) { Sleep(1); } // ‰½‚©‚µ‚ç‚Ìì‹Æ‚Ìi’»
+		for (count = 0; count < 40; ++count) { Sleep(1); } // ä½•ã‹ã—ã‚‰ã®ä½œæ¥­ã®é€²æ—
 	}
 	cio::disableLogMirroring();
 	EXPECT_EQ(readFile(logPath), std::string(40, ' '));
 
-	// I—¹‚É•\¦‚ğÁ‚·ƒeƒXƒg
+	// çµ‚äº†æ™‚ã«è¡¨ç¤ºã‚’æ¶ˆã™ãƒ†ã‚¹ãƒˆ
 	cio::enableLogMirroring(false, logPath);
 	{
 		size_t count = 0;
 		cio::ProgressPrinter pp([&count] { return std::string(count, '#'); }, 100, true);
-		for (count = 0; count < 40; ++count) { Sleep(1); } // ‰½‚©‚µ‚ç‚Ìì‹Æ‚Ìi’»
+		for (count = 0; count < 40; ++count) { Sleep(1); } // ä½•ã‹ã—ã‚‰ã®ä½œæ¥­ã®é€²æ—
 	}
 	cio::disableLogMirroring();
 	const std::string log = readFile(logPath);
-	EXPECT_LE(log.size(), 40); // clearWhenFinish ‚ª—LŒø‚Èê‡AÅŒã‚ÌXVŒãi‚Ì sleep ’†j‚ÉXV‚³‚ê‚½i’»‚Í•\¦‚³‚ê‚È‚¢‚½‚ßA‚±‚±‚Å‚Í40•¶š‚Ü‚Å•\¦‚µ‚«‚ç‚È‚¢‰Â”\«‚ª‚ ‚é
-	EXPECT_EQ(log.find_first_not_of(' '), std::string::npos); // ‘S‚Ä‚Ì•\¦‚ª‹ó”’•¶š‚Åã‘‚«‚³‚ê‚Ä‚¢‚é‚Í‚¸
+	EXPECT_LE(log.size(), 40); // clearWhenFinish ãŒæœ‰åŠ¹ãªå ´åˆã€æœ€å¾Œã®æ›´æ–°å¾Œï¼ˆã® sleep ä¸­ï¼‰ã«æ›´æ–°ã•ã‚ŒãŸé€²æ—ã¯è¡¨ç¤ºã•ã‚Œãªã„ãŸã‚ã€ã“ã“ã§ã¯40æ–‡å­—ã¾ã§è¡¨ç¤ºã—ãã‚‰ãªã„å¯èƒ½æ€§ãŒã‚ã‚‹
+	EXPECT_EQ(log.find_first_not_of(' '), std::string::npos); // å…¨ã¦ã®è¡¨ç¤ºãŒç©ºç™½æ–‡å­—ã§ä¸Šæ›¸ãã•ã‚Œã¦ã„ã‚‹ã¯ãš
 }
