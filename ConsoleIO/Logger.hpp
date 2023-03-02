@@ -28,6 +28,7 @@ public:
 	void disable(void);
 	void write(const std::string& string);
 	void writeError(const std::string& string);
+	void back(std::size_t count);
 	void flush(void);
 
 private:

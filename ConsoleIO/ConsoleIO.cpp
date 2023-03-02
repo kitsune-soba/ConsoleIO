@@ -63,6 +63,7 @@ void printError(const std::string& string, const Color color, const bool flush)
 void back(const std::size_t count)
 {
 	StandardOutput::getInstance().back(count);
+	Logger::getInstance().back(count);
 }
 
 // コンソールからの入力を1行分受け付ける（スペースで切らない）

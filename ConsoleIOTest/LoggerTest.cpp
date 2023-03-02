@@ -170,6 +170,29 @@ TEST(Logger, writeError)
 	logger.disable();
 }
 
+TEST(Logger, back)
+{
+	cio::Logger& logger = cio::Logger::getInstance();
+	const std::string path("Logger_back.log");
+
+	// 現在地を戻すテスト（位置が戻るだけで出力は消えない）
+	logger.enable(false, path, false);
+	logger.write("0123456789");
+	logger.back(10);
+	logger.flush();
+	EXPECT_EQ(readFile(path), "0123456789");
+
+	// 戻した位置から出力し直すテスト
+	logger.write("     ");
+	logger.flush();
+	EXPECT_EQ(readFile(path), "     56789");
+	logger.disable();
+
+	// TODO 現在の行の先頭よりも前に戻そうとした場合のテスト
+
+	// TODO ファイルの先頭よりも前に戻そうとした場合のテスト
+}
+
 TEST(Logger, flush)
 {
 	cio::Logger& logger = cio::Logger::getInstance();

@@ -38,6 +38,7 @@
   <ItemGroup>
     <ClCompile Include="ConsoleIOTest.cpp" />
     <ClCompile Include="LoggerTest.cpp" />
+    <ClCompile Include="ProgressPrinterTest.cpp" />
     <ClCompile Include="StandardOutputTest.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -31,10 +31,10 @@ void print(const std::string& string, Color color = Color::Default, bool flush =
 // 標準エラー出力に出力する
 void printError(const std::string& string, Color color = Color::Default, bool flush = true);
 
-// カーソルを指定された文字数分戻す
-// 戻った分の文字は削除しない
-// 現在の行の先頭よりも前へは戻らない
-// ログファイルへのミラーリングには反映されない
+// 指定された文字数分、出力の現在位置を戻す
+// 戻った分の文字は削除しない（消したければ別途空白文字で上書きする）
+// FIXME コンソールへの出力とログファイルへの出力に差がある
+//       コンソールでは現在の行の先頭より前には戻らず、ログファイルでは現在の行の先頭より前へも（ファイル先頭より前へすらも）戻る
 void back(std::size_t count);
 
 // コンソールからの入力を1行分受け付ける（スペースで切らない）

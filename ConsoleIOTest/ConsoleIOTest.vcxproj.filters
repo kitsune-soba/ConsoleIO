@@ -11,6 +11,9 @@
     <ClCompile Include="LoggerTest.cpp">
       <Filter>tests</Filter>
     </ClCompile>
+    <ClCompile Include="ProgressPrinterTest.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

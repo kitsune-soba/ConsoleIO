@@ -60,6 +60,15 @@ void Logger::writeError(const std::string& string)
 	}
 }
 
+// 指定された分だけ戻る
+void Logger::back(const std::size_t count)
+{
+	if (enabled)
+	{
+		stream.seekp(-static_cast<std::streamoff>(count), std::ios::cur);
+	}
+}
+
 // バッファを流す
 void Logger::flush(void)
 {
