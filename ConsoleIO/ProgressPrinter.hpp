@@ -13,7 +13,7 @@ namespace cio
 class ProgressPrinter
 {
 public:
-	ProgressPrinter(const std::function<std::string(void)>& progress, size_t sleep, bool clearWhenFinish);
+	ProgressPrinter(const std::function<std::string(void)>& progress, size_t pollingInterval, bool clearWhenFinish);
 	~ProgressPrinter();
 
 private:
@@ -21,11 +21,11 @@ private:
 	void printProgress(void);
 
 	const std::function<std::string(void)> progress;
-	const std::size_t sleep;
+	const std::size_t pollingInterval;
 	const bool clearWhenFinish;
 	std::thread thread;
 	bool finishRequired = false;
-	std::size_t lastLength = 0;
+	std::string lastWrote = "";
 };
 
 }

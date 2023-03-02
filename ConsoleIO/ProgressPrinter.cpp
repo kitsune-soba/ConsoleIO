@@ -7,10 +7,10 @@ namespace cio
 // コンストラクタ
 ProgressPrinter::ProgressPrinter(
 	const std::function<std::string(void)>& progress,
-	const size_t sleep,
+	const size_t pollingInterval,
 	const bool clearWhenFinish)
 	: progress(progress)
-	, sleep(sleep)
+	, pollingInterval(pollingInterval)
 	, clearWhenFinish(clearWhenFinish)
 	, thread([this] { update(); })
 {}
@@ -29,12 +29,13 @@ void ProgressPrinter::update(void)
 	while (!finishRequired)
 	{
 		printProgress();
-		std::this_thread::sleep_for(std::chrono::milliseconds(sleep));
+		std::this_thread::sleep_for(std::chrono::milliseconds(pollingInterval));
 	}
 
 	if (clearWhenFinish)
 	{
 		// 表示した内容を消す
+		const std::size_t lastLength = lastWrote.size();
 		back(lastLength);
 		print(std::string(lastLength, ' '));
 		back(lastLength);
@@ -49,11 +50,14 @@ void ProgressPrinter::update(void)
 // 表示する
 void ProgressPrinter::printProgress(void)
 {
+	std::string newProgress = progress();
+	if (newProgress == lastWrote) { return; } // 前回の表示と内容が変わらなければ何もしない
+
 	// 前回表示した分カーソルを戻す
+	const std::size_t lastLength = lastWrote.size();
 	back(lastLength);
 
 	// 今回の表示
-	const std::string newProgress = progress();
 	std::size_t newLength = newProgress.size();
 	print(newProgress);
 
@@ -65,7 +69,7 @@ void ProgressPrinter::printProgress(void)
 		back(spaceLength);
 	}
 
-	lastLength = newLength;
+	lastWrote = std::move(newProgress);
 }
 
 }
