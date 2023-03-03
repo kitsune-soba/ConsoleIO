@@ -1,4 +1,5 @@
 ﻿#include "ConsoleIO.hpp"
+#include "Logger.hpp"
 #include "ProgressPrinter.hpp"
 
 namespace cio
@@ -8,12 +9,20 @@ namespace cio
 ProgressPrinter::ProgressPrinter(
 	const std::function<std::string(void)>& progress,
 	const size_t pollingInterval,
-	const bool clearWhenFinish)
+	const bool clearWhenFinish,
+	const bool suppressLogMirroring)
 	: progress(progress)
 	, pollingInterval(pollingInterval)
 	, clearWhenFinish(clearWhenFinish)
+	, suppressLogMirroring(suppressLogMirroring)
+	, originalLogErrorOnlyMode(Logger::getInstance().getErrorOnlyMode())
 	, thread([this] { update(); })
-{}
+{
+	if (suppressLogMirroring)
+	{
+		changeLogMirroringMode(true);
+	}
+}
 
 // デストラクタ
 ProgressPrinter::~ProgressPrinter()
@@ -44,6 +53,17 @@ void ProgressPrinter::update(void)
 	{
 		// 最後の表示の後にスリープを挟んでいるので、最後にもう一度表示を更新する
 		printProgress();
+	}
+
+	// ログの書き込みが抑制されていれば、これを解除する
+	if (suppressLogMirroring)
+	{
+		Logger& logger = Logger::getInstance();
+		logger.setErrorOnlyMode(originalLogErrorOnlyMode);
+		if (!clearWhenFinish)
+		{
+			logger.write(lastWrote);
+		}
 	}
 }
 

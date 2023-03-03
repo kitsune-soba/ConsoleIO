@@ -24,15 +24,25 @@ TEST(ProgressPrinter, ConstructorAndDestructor)
 	cio::disableLogMirroring();
 	EXPECT_EQ(readFile(logPath), std::string(40, '#') + '\n');
 
-	// 表示を減らしていくテスト
+	// 表示を減らしていくテスト（ログの抑制が有効）
 	cio::enableLogMirroring(false, logPath);
 	{
 		size_t count = 0;
-		cio::ProgressPrinter pp([&count] { return std::string(40 - count, '#'); }, 1, false);
+		cio::ProgressPrinter pp([&count] { return std::string(40 - count, '#'); }, 1, false, true);
 		for (count = 0; count < 40; ++count) { Sleep(1); } // 何かしらの作業の進捗
 	}
 	cio::disableLogMirroring();
-	EXPECT_EQ(readFile(logPath), std::string(40, ' '));
+	EXPECT_EQ(readFile(logPath), ""); // ログの抑制が有効になっているので、最終的な結果のみがログに残っているはず
+
+	// 表示を減らしていくテスト（ログの抑制が無効）
+	cio::enableLogMirroring(false, logPath);
+	{
+		size_t count = 0;
+		cio::ProgressPrinter pp([&count] { return std::string(40 - count, '#'); }, 1, false, false);
+		for (count = 0; count < 40; ++count) { Sleep(1); } // 何かしらの作業の進捗
+	}
+	cio::disableLogMirroring();
+	EXPECT_EQ(readFile(logPath), std::string(40, ' ')); // ログの抑制が無効なので、途中経過もログに残っているはず
 
 	// 終了時に表示を消すテスト
 	cio::enableLogMirroring(false, logPath);

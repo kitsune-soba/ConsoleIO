@@ -24,7 +24,8 @@ public:
 	static Logger& getInstance(void);
 
 	void enable(bool errorOnly, const std::string& path, bool append);
-	void changeMode(bool errorOnly);
+	void setErrorOnlyMode(bool errorOnly);
+	bool getErrorOnlyMode(void) const;
 	void disable(void);
 	void write(const std::string& string);
 	void writeError(const std::string& string);

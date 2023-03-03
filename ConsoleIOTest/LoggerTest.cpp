@@ -62,22 +62,23 @@ TEST(Logger, enable)
 
 	// 多重に enable しても何も起きないテスト
 	EXPECT_NO_THROW(logger.enable(true, path, false));
-	EXPECT_NO_THROW(logger.enable(true, path, false));
+	EXPECT_NO_THROW(logger.enable(false, path, false));
+	EXPECT_TRUE(logger.getErrorOnlyMode());
 	logger.disable();
 }
 
-TEST(Logger, changeMode)
+TEST(Logger, setErrorOnlyMode)
 {
 	cio::Logger& logger = cio::Logger::getInstance();
-	const std::string path("Logger_changeMode.log");
+	const std::string path("Logger_setErrorOnlyMode.log");
 
 	logger.enable(true, path, false);
 	logger.write("StandardOutput_1\n"); // errorOnly モードなので書き込まれないはず
 	logger.writeError("StandardError_1\n");
-	logger.changeMode(false);
+	logger.setErrorOnlyMode(false);
 	logger.write("StandardOutput_2\n");
 	logger.writeError("StandardError_2\n");
-	logger.changeMode(true);
+	logger.setErrorOnlyMode(true);
 	logger.write("StandardOutput_3\n"); // errorOnly モードなので書き込まれないはず
 	logger.writeError("StandardError_3\n");
 	logger.flush();
@@ -87,12 +88,30 @@ TEST(Logger, changeMode)
 
 	// 現在のモードと同じモードに設定しようとしても問題ないことを確認するテスト
 	logger.enable(true, path, false);
-	EXPECT_NO_THROW(logger.changeMode(true));
-	EXPECT_NO_THROW(logger.changeMode(true));
+	EXPECT_NO_THROW(logger.setErrorOnlyMode(true));
+	EXPECT_NO_THROW(logger.setErrorOnlyMode(true));
 	logger.disable();
 	logger.enable(false, path, false);
-	EXPECT_NO_THROW(logger.changeMode(false));
-	EXPECT_NO_THROW(logger.changeMode(false));
+	EXPECT_NO_THROW(logger.setErrorOnlyMode(false));
+	EXPECT_NO_THROW(logger.setErrorOnlyMode(false));
+	logger.disable();
+}
+
+TEST(Logger, getErrorOnlyMode)
+{
+	cio::Logger& logger = cio::Logger::getInstance();
+	const std::string path("Logger_getErrorOnlyMode.log");
+
+	// setErrorOnlyMode の後で状態を確認するテスト
+	logger.setErrorOnlyMode(false);
+	EXPECT_FALSE(logger.getErrorOnlyMode());
+
+	// enable の後で状態を確認するテスト
+	logger.enable(true, path, false); // エラーのみ：有効
+	EXPECT_TRUE(logger.getErrorOnlyMode());
+	logger.disable();
+	logger.enable(false, path, false); // エラーのみ：無効
+	EXPECT_FALSE(logger.getErrorOnlyMode());
 	logger.disable();
 }
 

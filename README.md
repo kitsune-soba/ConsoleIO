@@ -23,7 +23,11 @@
 // ConsoleIO のヘッダやライブラリの場所はお好みで
 #include <ConsoleIO/ConsoleIO.hpp>
 #include <ConsoleIO/ProgressPrinter.hpp>
-#pragma comment(lib, "Release/ConsoleIO.lib")
+#ifdef _DEBUG
+#  pragma comment(lib, "Debug/ConsoleIO.lib")
+#else
+#  pragma comment(lib, "Release/ConsoleIO.lib")
+#endif
 
 // 何かしらの仕事をするクラス
 class SomeWork
@@ -62,12 +66,10 @@ int main(int, char* [])
 	// 「処理中...0%」から「処理中...100%」まで 100 ms 間隔で表示を更新する
 	SomeWork work;
 	cio::print("処理中...");
-	cio::changeLogMirroringMode(true); // 進捗の表示の更新がいちいちログファイルに書き込まれないように、エラー以外のログ出力を一旦止める
 	{
 		cio::ProgressPrinter pp([&work] { return work.getProgressString(); }, 100, true); // pp が破棄されるまで別スレッドで表示を更新し続ける
 		work.run();
 	}
-	cio::changeLogMirroringMode(false); // ログ出力の設定を戻す
 	cio::print("完了\n", cio::Color::Green); // 緑色で表示
 
 	// ユーザーに質問する
